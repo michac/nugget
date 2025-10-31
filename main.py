@@ -119,30 +119,29 @@ def create_bricks(burger_image):
     return bricks
 
 
-# Load assets
-nugget_image = pygame.image.load("assets/nugget.png")
-burger_image = pygame.image.load("assets/burger_brick.png")
-
-# Load sounds
-pygame.mixer.init()
-fart_sound = pygame.mixer.Sound("assets/fart.ogg")
-
-# Create game objects
-paddle = Paddle()
-ball = Ball(nugget_image)
-bricks = create_bricks(burger_image)
-
-# Font
-font = pygame.font.Font(None, 72)
-small_font = pygame.font.Font(None, 36)
-
-# Game state
-game_over = False
-won = False
-
 # Main game loop
 async def main():
-    global game_over, won
+    # Load assets
+    nugget_image = pygame.image.load("assets/nugget.png")
+    burger_image = pygame.image.load("assets/burger_brick.png")
+
+    # Load sounds
+    pygame.mixer.init()
+    fart_sound = pygame.mixer.Sound("assets/fart.ogg")
+
+    # Create game objects
+    paddle = Paddle()
+    ball = Ball(nugget_image)
+    bricks = create_bricks(burger_image)
+
+    # Font
+    font = pygame.font.Font(None, 72)
+    small_font = pygame.font.Font(None, 36)
+
+    # Game state
+    game_over = False
+    won = False
+
     running = True
     while running:
         clock.tick(FPS)

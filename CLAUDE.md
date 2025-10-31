@@ -4,11 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a pygame-based game called "Nugget Breakout". A breakout-style game where you bounce a nugget to destroy burger bricks. The game is built with pygame-ce and can run both as a native desktop application and in web browsers via WebAssembly.
+This is a game called "Nugget Breakout". A breakout-style game where you bounce a nugget to destroy burger bricks.
+
+The project contains two versions:
+- **Desktop Version**: Built with pygame-ce (in root directory)
+- **Web Version**: Built with Phaser.js and Vite (in `web/` directory)
 
 ## Setup
 
-The project uses `uv` for dependency management with a virtual environment.
+### Desktop Version (Pygame)
+
+The desktop version uses `uv` for dependency management with a virtual environment.
 
 ```bash
 # Create virtual environment (if not already created)
@@ -16,6 +22,18 @@ uv venv
 
 # Install dependencies
 uv pip install -r requirements.txt
+```
+
+### Web Version (Phaser.js)
+
+The web version uses npm for dependency management.
+
+```bash
+# Navigate to web directory
+cd web
+
+# Install dependencies
+npm install
 ```
 
 ## Running the Game
@@ -41,74 +59,116 @@ This will launch an 800x600 window with the game. The game uses pygame's event l
 
 ### Web Version (Browser)
 
-To test the game in a browser locally:
+To run the web version locally with Vite's dev server:
 
 ```bash
-# From parent directory
-cd ..
-nugget\.venv\Scripts\pygbag.exe nugget  # Windows
-# nugget/.venv/bin/pygbag nugget  # macOS/Linux
+# Navigate to web directory
+cd web
+
+# Start development server
+npm run dev
 ```
 
-Then open `http://localhost:8000` in your browser. The first build may take several minutes.
+This will start a local server at `http://localhost:3000` and automatically open the game in your browser. The dev server includes hot module replacement for instant updates during development.
+
+To build the production version:
+
+```bash
+cd web
+npm run build
+```
+
+The built files will be in `web/dist/` directory.
 
 ## Architecture
 
-The project currently uses a simple single-file structure:
+### Desktop Version (Pygame)
+
+Simple single-file structure:
 
 - **main.py**: Entry point containing the pygame initialization, main game loop, and rendering logic. The game loop handles:
   - Event processing (window close events)
   - Screen clearing and background filling
-  - Title text rendering at the top of the window
+  - Game objects (Paddle, Ball, Brick classes)
+  - Collision detection
   - Display updates via `pygame.display.flip()`
+
+### Web Version (Phaser.js)
+
+Scene-based architecture:
+
+- **web/index.html**: HTML entry point with game canvas container
+- **web/main.js**: Phaser game configuration and scene initialization
+- **web/scenes/Preload.js**: Asset loading scene
+- **web/scenes/Game.js**: Main game scene with all game logic
+- **web/public/assets/**: Game assets (images, sounds)
+- **web/vite.config.js**: Vite build configuration
 
 ## Deployment to GitHub Pages
 
-The game automatically deploys to GitHub Pages when you push to the `main` or `master` branch.
+The web version (Phaser.js) automatically deploys to GitHub Pages when you push to the `main` or `master` branch.
 
 ### First-time Setup
 
-1. **Enable GitHub Actions permissions:**
-   - Go to repository Settings > Actions > General
-   - Under "Workflow permissions", select "Read and write permissions"
-   - Click Save
+1. **Configure GitHub Pages:**
+   - Go to repository Settings > Pages
+   - Under "Source", select "GitHub Actions"
+   - Save the settings
 
-2. **Configure GitHub Pages:**
-   - Go to Settings > Pages
-   - Under "Source", select "Deploy from a branch"
-   - Under "Branch", select `gh-pages` and `/ (root)`
-   - Click Save
-
-3. **Push your changes:**
+2. **Push your changes:**
    ```bash
    git add .
-   git commit -m "Add web support with pygbag"
+   git commit -m "Add Phaser.js web version"
    git push
    ```
 
-4. **Access your game:**
+3. **Access your game:**
    - After the GitHub Action completes, your game will be available at:
    - `https://[username].github.io/[repository-name]/`
 
-The workflow file is located at `.github/workflows/pygbag.yml` and handles the build and deployment automatically.
+The workflow file is located at `.github/workflows/deploy-phaser.yml` and handles the build and deployment automatically. It:
+1. Installs Node.js and npm dependencies
+2. Builds the production version with Vite
+3. Deploys the `web/dist/` directory to GitHub Pages
 
 ## Development Environment
 
+### Desktop Version
 - Python 3.11+ with pygame-ce installed
-- pygbag for web builds
 - Dependencies managed via uv
 - Standard library: sys, asyncio
 
+### Web Version
+- Node.js 20+ with npm
+- Vite (development server and build tool)
+- Phaser.js 3.87.0
+
 ## Code Style
 
-- Color constants defined as RGB tuples in UPPER_CASE (e.g., WHITE, BLACK, GOLD)
+### Shared
 - Screen dimensions: 800x600
-- Default font size: 64pt for title text
+- Colors: Dark blue background (#141e32), white text, gold for win state (#ffd700)
+- Assets: nugget.png (30x30 ball), burger_brick.png (bricks), fart.ogg (sound effect)
+
+### Pygame Version
+- Color constants as RGB tuples in UPPER_CASE (e.g., WHITE, BLACK, GOLD)
+- Class-based game objects (Paddle, Ball, Brick)
 - Async/await pattern for browser compatibility
+
+### Phaser.js Version
+- Scene-based architecture (Preload, Game)
+- Hex color codes for colors
+- Phaser's built-in physics and sprite system
 
 ## Technical Notes
 
-- The game uses `asyncio` for cross-platform compatibility (desktop and web)
-- Audio files must be in OGG format for web deployment
-- Images should be PNG, WebP, or JPG (not BMP)
-- The `await asyncio.sleep(0)` in the game loop allows the browser to process events
+### Desktop Version (Pygame)
+- Uses `asyncio` for cross-platform compatibility
+- Simple collision detection with rect.colliderect()
+- Manual velocity and position updates
+
+### Web Version (Phaser.js)
+- Arcade Physics for movement and collisions
+- Asset preloading in dedicated scene
+- Automatic canvas scaling and rendering
+- OGG audio format for wide browser support
