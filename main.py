@@ -1,5 +1,6 @@
 import pygame
 import sys
+import asyncio
 
 # Initialize pygame
 pygame.init()
@@ -124,7 +125,7 @@ burger_image = pygame.image.load("assets/burger_brick.png")
 
 # Load sounds
 pygame.mixer.init()
-fart_sound = pygame.mixer.Sound("assets/fart.mp3")
+fart_sound = pygame.mixer.Sound("assets/fart.ogg")
 
 # Create game objects
 paddle = Paddle()
@@ -140,75 +141,79 @@ game_over = False
 won = False
 
 # Main game loop
-running = True
-while running:
-    clock.tick(FPS)
+async def main():
+    global game_over, won
+    running = True
+    while running:
+        clock.tick(FPS)
+        await asyncio.sleep(0)
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and game_over:
-                # Reset game
-                ball.reset()
-                bricks = create_bricks(burger_image)
-                game_over = False
-                won = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and game_over:
+                    # Reset game
+                    ball.reset()
+                    bricks = create_bricks(burger_image)
+                    game_over = False
+                    won = False
 
-    if not game_over:
-        # Get keys
-        keys = pygame.key.get_pressed()
+        if not game_over:
+            # Get keys
+            keys = pygame.key.get_pressed()
 
-        # Update paddle
-        paddle.move(keys)
+            # Update paddle
+            paddle.move(keys)
 
-        # Update ball
-        ball.update()
+            # Update ball
+            ball.update()
 
-        # Check collision with paddle
-        if ball.rect.colliderect(paddle.rect) and ball.vel_y > 0:
-            ball.bounce_y()
-            fart_sound.play()
-            # Add some horizontal velocity based on where it hit the paddle
-            hit_pos = (ball.rect.centerx - paddle.rect.centerx) / (paddle.width / 2)
-            ball.vel_x = hit_pos * BALL_SPEED
-
-        # Check collision with bricks
-        for brick in bricks:
-            if brick.alive and ball.rect.colliderect(brick.rect):
-                brick.alive = False
+            # Check collision with paddle
+            if ball.rect.colliderect(paddle.rect) and ball.vel_y > 0:
                 ball.bounce_y()
-                break
+                fart_sound.play()
+                # Add some horizontal velocity based on where it hit the paddle
+                hit_pos = (ball.rect.centerx - paddle.rect.centerx) / (paddle.width / 2)
+                ball.vel_x = hit_pos * BALL_SPEED
 
-        # Check win condition
-        if all(not brick.alive for brick in bricks):
-            game_over = True
-            won = True
+            # Check collision with bricks
+            for brick in bricks:
+                if brick.alive and ball.rect.colliderect(brick.rect):
+                    brick.alive = False
+                    ball.bounce_y()
+                    break
 
-    # Draw everything
-    screen.fill(DARK_BLUE)
+            # Check win condition
+            if all(not brick.alive for brick in bricks):
+                game_over = True
+                won = True
 
-    # Draw game objects
-    paddle.draw(screen)
-    ball.draw(screen)
-    for brick in bricks:
-        brick.draw(screen)
+        # Draw everything
+        screen.fill(DARK_BLUE)
 
-    # Draw game over screen
-    if game_over:
-        if won:
-            text = font.render("YOU WIN!", True, GOLD)
-        else:
-            text = font.render("GAME OVER", True, WHITE)
-        text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-        screen.blit(text, text_rect)
+        # Draw game objects
+        paddle.draw(screen)
+        ball.draw(screen)
+        for brick in bricks:
+            brick.draw(screen)
 
-        restart_text = small_font.render("Press SPACE to play again", True, WHITE)
-        restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60))
-        screen.blit(restart_text, restart_rect)
+        # Draw game over screen
+        if game_over:
+            if won:
+                text = font.render("YOU WIN!", True, GOLD)
+            else:
+                text = font.render("GAME OVER", True, WHITE)
+            text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            screen.blit(text, text_rect)
 
-    # Update display
-    pygame.display.flip()
+            restart_text = small_font.render("Press SPACE to play again", True, WHITE)
+            restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60))
+            screen.blit(restart_text, restart_rect)
 
+        # Update display
+        pygame.display.flip()
+
+asyncio.run(main())
 pygame.quit()
 sys.exit()
